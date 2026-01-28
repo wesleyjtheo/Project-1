@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPO Analysis Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0e1a;
+            min-height: 100vh;
+            color: #e4e6eb;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            background: rgba(16, 20, 31, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            font-size: 28px;
+        }
+
+        .logo h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 20px;
+            font-size: 13px;
+            color: #10b981;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 32px;
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* Sidebar - Parameters Panel */
+        .sidebar {
+            background: rgba(16, 20, 31, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            height: fit-content;
+            position: sticky;
+            top: 90px;
+        }
+
+        .sidebar-header {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-header p {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #d1d5db;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group select,
+        .form-group input[type="date"] {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(30, 35, 48, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+            color: #e4e6eb;
+            transition: all 0.2s;
+        }
+
+        .form-group select:hover,
+        .form-group input[type="date"]:hover {
+            border-color: rgba(99, 102, 241, 0.5);
+            background: rgba(30, 35, 48, 0.8);
+        }
+
+        .form-group select:focus,
+        .form-group input[type="date"]:focus {
+            outline: none;
+            border-color: #6366f1;
+            background: rgba(30, 35, 48, 0.9);
+        }
+
+        /* Analysis Options */
+        .analysis-section {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .analysis-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            background: rgba(30, 35, 48, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(30, 35, 48, 0.7);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .checkbox-item input {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-item span {
+            font-size: 14px;
+            color: #e4e6eb;
+        }
+
+        /* Action Buttons */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(30, 35, 48, 0.6);
+            color: #e4e6eb;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(30, 35, 48, 0.9);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Loading State */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px 40px;
+            background: rgba(16, 20, 31, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(99, 102, 241, 0.1);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        /* Results Section */
+        .results {
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .result-card {
+            background: rgba(16, 20, 31, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 20px;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-badge {
+            padding: 6px 12px;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #a5b4fc;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: rgba(30, 35, 48, 0.5);
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #d1d5db;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 11px;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e4e6eb;
+        }
+
+        tbody tr:hover {
+            background: rgba(30, 35, 48, 0.3);
+        }
+
+        /* TPO Profile Styles */
+        .tpo-profile {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            overflow-x: auto;
+            background: rgba(10, 14, 26, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        .tpo-profile pre {
+            color: #e4e6eb;
+            line-height: 1.4;
+        }
+
+        /* Error State */
+        .error {
+            display: none;
+            padding: 20px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-left: 4px solid #ef4444;
+            border-radius: 8px;
+            margin-top: 20px;
+            color: #fca5a5;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        .error-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ef4444;
+        }
+
+        /* Info Cards */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .info-card {
+            background: rgba(30, 35, 48, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .info-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #9ca3af;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: relative;
+                top: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar-content {
+                padding: 12px 16px;
+            }
+
+            .main-container {
+                padding: 16px;
+                gap: 16px;
+            }
+
+            .result-card {
+                padding: 20px;
+            }
+
+            .logo h1 {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">
+                <span class="logo-icon">📊</span>
+                <h1>TPO Analysis Platform</h1>
+            </div>
+            <div class="nav-status">
+                <span class="status-dot"></span>
+                <span>Live Analysis</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar - Parameters -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Analysis Parameters</h2>
+                <p>Configure your market analysis</p>
+            </div>
+
+            <form id="analysisForm">
+                <div class="form-group">
+                    <label for="symbol">Cryptocurrency</label>
+                    <select id="symbol" name="symbol">
+                        {% for pair in available_pairs %}
+                        <option value="{{ pair }}">{{ pair.replace('USDT', '') }}/USDT</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="interval">Time Interval</label>
+                    <select id="interval" name="interval">
+                        <option value="30m">30 Minutes</option>
+                        <option value="1h" selected>1 Hour</option>
+                        <option value="4h">4 Hours</option>
+                        <option value="1d">1 Day</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="tpo_period">TPO Period</label>
+                    <select id="tpo_period" name="tpo_period">
+                        <option value="30m">30 Minutes</option>
+                        <option value="1h" selected>1 Hour</option>
+                        <option value="4h">4 Hours</option>
+                        <option value="1d">1 Day</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="days">Date Range</label>
+                    <select id="days" name="days">
+                        <option value="7">Last 7 Days</option>
+                        <option value="30" selected>Last 30 Days</option>
+                        <option value="60">Last 60 Days</option>
+                        <option value="90">Last 90 Days</option>
+                        <option value="custom">Custom Range (Backtest)</option>
+                    </select>
+                </div>
+
+                <div id="customDateRange" style="display: none;">
+                    <div class="form-group">
+                        <label for="startDate">Start Date</label>
+                        <input type="date" id="startDate" name="startDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">End Date</label>
+                        <input type="date" id="endDate" name="endDate">
+                    </div>
+                </div>
+
+                <div class="analysis-section">
+                    <h3>Analysis Modules</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="run_tpo" checked>
+                            <span>TPO Generation</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="run_rotation">
+                            <span>Rotation Factor</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="run_daily">
+                            <span>Daily Analysis</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="run_poc">
+                            <span>POC Movement</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="save_density">
+                            <span>Long Term Profile</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary" id="analyzeBtn">
+                        <span>🔍</span>
+                        <span>Run Analysis</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="downloadPdfBtn" disabled>
+                        <span>📄</span>
+                        <span>Download PDF Report</span>
+                    </button>
+                </div>
+            </form>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Loading State -->
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <p>Running analysis, please wait...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error" id="error">
+                <div class="error-title">⚠️ Analysis Error</div>
+                <p id="errorMessage"></p>
+            </div>
+
+            <!-- Results -->
+            <div class="results" id="results"></div>
+        </main>
+    </div>
+
+    <script>
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .result-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-left: 5px solid #667eea;
+        }
+
+        .result-section h3 {
+            color: #764ba2;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .result-table th,
+        .result-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .result-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .tpo-profile {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .tpo-profile table {
+            border-collapse: collapse;
+        }
+
+        .tpo-profile td {
+            padding: 2px 5px;
+            white-space: nowrap;
+        }
+
+        .highlight-positive {
+            background: #d4edda;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .highlight-negative {
+            background: #f8d7da;
+            color: #721c24;
+            font-weight: bold;
+        }
+
+        .summary-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-item h4 {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .summary-item .value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .error {
+            display: none;
+            padding: 20px;
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .error.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 TPO Analysis Platform</h1>
+            <p>Comprehensive Cryptocurrency Market Profile Analysis</p>
+        </div>
+
+        <div class="content">
+            <form id="analysisForm">
+                <div class="form-section">
+                    <h2>Basic Parameters</h2>
+                    
+                    <div class="form-group">
+                        <label for="symbol">Cryptocurrency</label>
+                        <select id="symbol" name="symbol">
+                            {% for pair in available_pairs %}
+                            <option value="{{ pair }}">{{ pair }} ({{ pair.replace('USDT', '') }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="interval">Time Interval</label>
+                        <select id="interval" name="interval">
+                            <option value="30m">30 Minutes</option>
+                            <option value="1h" selected>1 Hour</option>
+                            <option value="4h">4 Hours</option>
+                            <option value="1d">1 Day</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tpo_period">TPO Period</label>
+                        <select id="tpo_period" name="tpo_period">
+                            <option value="30m">30 Minutes</option>
+                            <option value="1h" selected>1 Hour</option>
+                            <option value="4h">4 Hours</option>
+                            <option value="1d">1 Day</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="days">Date Range</label>
+                        <select id="days" name="days">
+                            <option value="7">Last 7 Days</option>
+                            <option value="30" selected>Last 30 Days</option>
+                            <option value="60">Last 60 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="custom">Custom Range (Backtest)</option>
+                        </select>
+                    </div>
+
+                    <div id="customDateRange" style="display: none;">
+                        <div class="form-group">
+                            <label for="startDate">Start Date</label>
+                            <input type="date" id="startDate" name="startDate" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                        </div>
+                        <div class="form-group">
+                            <label for="endDate">End Date</label>
+                            <input type="date" id="endDate" name="endDate" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Analysis Options</h2>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="run_tpo" checked>
+                            <span>TPO Generation</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="run_rotation">
+                            <span>Rotation Factor Analysis</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="run_daily">
+                            <span>Daily Analysis</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="run_poc">
+                            <span>POC Movement Analysis</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="save_density">
+                            <span>Generate Long Term Profile</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">🚀 Run Analysis</button>
+                    <button type="button" id="downloadPdfBtn" class="btn btn-secondary" disabled>
+                        📄 Download PDF Report
+                    </button>
+                </div>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Running analysis... This may take a few minutes.</p>
+            </div>
+
+            <div class="error" id="error">
+                <h3>❌ Error</h3>
+                <p id="errorMessage"></p>
+            </div>
+
+            <div class="results" id="results">
+                <div id="resultsContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('analysisForm');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const results = document.getElementById('results');
+        const resultsContent = document.getElementById('resultsContent');
+        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+
+        // Handle custom date range visibility
+        document.getElementById('days').addEventListener('change', function() {
+            const customDateRange = document.getElementById('customDateRange');
+            if (this.value === 'custom') {
+                customDateRange.style.display = 'block';
+                // Set default dates
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() - 30);
+                document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+                document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+            } else {
+                customDateRange.style.display = 'none';
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            loading.classList.add('active');
+            error.classList.remove('active');
+            results.classList.remove('active');
+            downloadPdfBtn.disabled = true;
+
+            const formData = {
+                symbol: document.getElementById('symbol').value,
+                interval: document.getElementById('interval').value,
+                tpo_period: document.getElementById('tpo_period').value,
+                days: document.getElementById('days').value,
+                start_date: document.getElementById('days').value === 'custom' ? document.getElementById('startDate').value : null,
+                end_date: document.getElementById('days').value === 'custom' ? document.getElementById('endDate').value : null,
+                run_tpo: document.querySelector('input[name="run_tpo"]').checked,
+                run_rotation: document.querySelector('input[name="run_rotation"]').checked,
+                run_daily: document.querySelector('input[name="run_daily"]').checked,
+                run_poc: document.querySelector('input[name="run_poc"]').checked,
+                save_density: document.querySelector('input[name="save_density"]').checked
+            };
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data.results);
+                    downloadPdfBtn.disabled = false;
+                } else {
+                    showError(data.error + (data.trace ? '\n\n' + data.trace : ''));
+                }
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                loading.classList.remove('active');
+            }
+        });
+
+        downloadPdfBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/download-pdf');
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `TPO_Analysis_${Date.now()}.pdf`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                showError('Failed to download PDF: ' + err.message);
+            }
+        });
+
+        function displayResults(data) {
+            let html = '<h2 style="color: #667eea; margin-bottom: 30px;">✅ Analysis Complete</h2>';
+
+            // Summary Cards
+            html += '<div class="summary-card">';
+            html += `<div class="summary-item"><h4>Symbol</h4><div class="value">${data.symbol}</div></div>`;
+            html += `<div class="summary-item"><h4>Interval</h4><div class="value">${data.interval}</div></div>`;
+            html += `<div class="summary-item"><h4>Days</h4><div class="value">${data.days}</div></div>`;
+            html += '</div>';
+
+            // TPO Analysis
+            if (data.analyses.tpo) {
+                html += displayTPOAnalysis(data.analyses.tpo);
+            }
+
+            // Rotation Factor
+            if (data.analyses.rotation) {
+                html += displayRotationAnalysis(data.analyses.rotation);
+            }
+
+            // Daily Analysis
+            if (data.analyses.daily) {
+                html += displayDailyAnalysis(data.analyses.daily);
+            }
+
+            // POC Movement
+            if (data.analyses.poc) {
+                html += displayPOCAnalysis(data.analyses.poc);
+            }
+
+            resultsContent.innerHTML = html;
+            results.classList.add('active');
+        }
+
+        function displayTPOAnalysis(tpo) {
+            let html = '<div class="result-section"><h3>📈 TPO Analysis</h3>';
+            
+            html += '<div class="summary-card">';
+            html += `<div class="summary-item"><h4>TPO Blocks</h4><div class="value">${tpo.tpo_blocks}</div></div>`;
+            html += `<div class="summary-item"><h4>Time Brackets</h4><div class="value">${tpo.time_brackets}</div></div>`;
+            html += `<div class="summary-item"><h4>Sessions</h4><div class="value">${tpo.daily_sessions}</div></div>`;
+            html += '</div>';
+
+            if (tpo.tpo_profile && tpo.tpo_profile.length > 0 && tpo.dates) {
+                html += '<h4 style="margin: 20px 0 10px 0;">TPO Profile (Letter-Based Market Profile)</h4>';
+                html += '<p style="color: #666; margin-bottom: 10px; font-size: 0.9em;">Each letter represents a time period. Stacked letters show price levels visited during that time.</p>';
+                html += '<div class="tpo-profile"><table>';
+                html += '<tr><th style="position: sticky; left: 0; background: #667eea; color: white;">Price</th>';
+                tpo.dates.forEach(date => {
+                    html += `<th style="background: #667eea; color: white;">${date}</th>`;
+                });
+                html += '</tr>';
+                
+                tpo.tpo_profile.forEach(row => {
+                    html += `<tr><td style="font-weight: bold; position: sticky; left: 0; background: white;">${row.price.toFixed(2)}</td>`;
+                    tpo.dates.forEach(date => {
+                        const letters = row[date] || '.';
+                        const color = letters !== '.' ? '#e3f2fd' : 'white';
+                        html += `<td style="background: ${color};">${letters}</td>`;
+                    });
+                    html += '</tr>';
+                });
+                html += '</table></div>';
+            }
+            
+            // Display Long Term Profile if available
+            if (tpo.tpo_density && tpo.tpo_density.length > 0) {
+                html += '<h4 style="margin: 20px 0 10px 0;">Long Term Profile</h4>';
+                html += '<p style="color: #666; margin-bottom: 10px; font-size: 0.9em;">Shows price levels visited across all days. Each X represents a TPO block.</p>';
+                html += '<div class="tpo-profile" style="max-height: 500px; overflow-y: auto;"><table>';
+                html += '<thead style="position: sticky; top: 0; z-index: 10;"><tr>';
+                html += '<th style="position: sticky; left: 0; background: #667eea; color: white; z-index: 11;">Price</th>';
+                html += '<th style="background: #667eea; color: white;">Days</th>';
+                html += '<th style="background: #667eea; color: white; min-width: 300px;">Long Term Profile</th>';
+                html += '</tr></thead>';
+                html += '<tbody>';
+                tpo.tpo_density.forEach(row => {
+                    const days = row['DYS TPO'];
+                    const densityParts = row['TPO DENSITY'].split(' ');
+                    const count = densityParts[0];
+                    const xs = densityParts.slice(1).join('');
+                    // Color intensity based on days visited
+                    const intensity = Math.min(days * 20, 255);
+                    const bgColor = days > 0 ? `rgba(33, 150, 243, ${Math.min(days / 10, 0.3)})` : 'white';
+                    html += `<tr>
+                        <td style="font-weight: bold; position: sticky; left: 0; background: white; border-right: 2px solid #667eea;">${row.PRICE}</td>
+                        <td style="text-align: center; background: ${bgColor};">${days}</td>
+                        <td style="font-family: monospace; font-size: 0.85em; background: ${bgColor}; letter-spacing: 1px;">${count} ${xs}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table></div>';
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        function displayRotationAnalysis(rotation) {
+            let html = '<div class="result-section"><h3>🔄 Rotation Factor Analysis</h3>';
+            
+            if (rotation && rotation.length > 0) {
+                const totalNet = rotation.reduce((sum, r) => sum + r.net_rotation, 0);
+                const bullishDays = rotation.filter(r => r.net_rotation > 0).length;
+                const bearishDays = rotation.filter(r => r.net_rotation < 0).length;
+                
+                html += '<div class="summary-card">';
+                const netColor = totalNet > 0 ? '#4caf50' : (totalNet < 0 ? '#f44336' : '#ff9800');
+                html += `<div class="summary-item" style="background: ${netColor};"><h4>Total Net</h4><div class="value">${totalNet.toFixed(2)}</div></div>`;
+                html += `<div class="summary-item" style="background: #4caf50;"><h4>Bullish Days</h4><div class="value">${bullishDays}</div></div>`;
+                html += `<div class="summary-item" style="background: #f44336;"><h4>Bearish Days</h4><div class="value">${bearishDays}</div></div>`;
+                html += '</div>';
+
+                html += '<table class="result-table"><tr><th>Date</th><th>Net</th><th>Up</th><th>Down</th><th>Bias</th></tr>';
+                rotation.forEach(item => {
+                    const biasClass = item.net_rotation > 0 ? 'highlight-positive' : (item.net_rotation < 0 ? 'highlight-negative' : '');
+                    const bias = item.net_rotation > 0 ? '🟢 BULL' : (item.net_rotation < 0 ? '🔴 BEAR' : '⚪ FLAT');
+                    html += `<tr>
+                        <td>${item.date}</td>
+                        <td class="${biasClass}">${item.net_rotation.toFixed(2)}</td>
+                        <td>${item.total_up.toFixed(2)}</td>
+                        <td>${item.total_down.toFixed(2)}</td>
+                        <td>${bias}</td>
+                    </tr>`;
+                });
+                html += '</table>';
+            }
+            
+            html += '</div>';
+            return html;
+        }
+
+        function displayDailyAnalysis(daily) {
+            let html = '<div class="result-section"><h3>📅 Daily Analysis</h3>';
+            
+            // Display the formatted report table if available
+            if (daily.report && daily.report.length > 0) {
+                const report = daily.report;
+                
+                // Process each timeframe row
+                report.forEach(row => {
+                    html += `<div style="margin-bottom: 30px; border: 2px solid #667eea; border-radius: 10px; padding: 20px; background: #f8f9fa;">`;
+                    html += `<h4 style="color: #667eea; margin-bottom: 15px;">📊 ${row.Timeframe} Timeframe</h4>`;
+                    
+                    // Control and Trend Summary
+                    const controlColor = row.Control === 'BUYER' ? '#4caf50' : (row.Control === 'SELLER' ? '#f44336' : '#ff9800');
+                    const trendColor = row.Trend.includes('↑') ? '#4caf50' : (row.Trend.includes('↓') ? '#f44336' : '#ff9800');
+                    html += '<div style="display: flex; gap: 15px; margin-bottom: 20px;">';
+                    html += `<div style="flex: 1; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid ${controlColor};">`;
+                    html += `<div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">Market Control</div>`;
+                    html += `<div style="font-size: 1.5em; font-weight: bold; color: ${controlColor};">${row.Control}</div>`;
+                    html += '</div>';
+                    html += `<div style="flex: 1; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid ${trendColor};">`;
+                    html += `<div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">Trend</div>`;
+                    html += `<div style="font-size: 1.2em; font-weight: bold; color: ${trendColor};">${row.Trend}</div>`;
+                    html += '</div></div>';
+                    
+                    // Volume and VA Volume (PRIORITY)
+                    html += '<div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">';
+                    html += '<h5 style="color: #667eea; margin-bottom: 10px;">📈 Volume & Value Area Analysis</h5>';
+                    html += '<table class="result-table" style="width: 100%; font-size: 13px;">';
+                    html += '<thead><tr><th style="width: 15%;">Period</th><th style="width: 15%;">Date</th><th>Total Volume</th><th>VA Volume</th><th>VAH</th><th>VAL</th></tr></thead>';
+                    html += '<tbody>';
+                    html += `<tr style="background: #e3f2fd;"><td style="font-weight: bold;">Today</td><td style="font-weight: bold;">${row.Date_Today}</td>`;
+                    html += `<td style="font-weight: bold; font-size: 1.1em;">${row.Volume_Today}</td>`;
+                    html += `<td style="font-weight: bold; font-size: 1.1em; color: #1976d2;">${row.VA_Vol_Today}</td>`;
+                    html += `<td>${row.VAH_Today}</td><td>${row.VAL_Today}</td></tr>`;
+                    html += `<tr><td>Yesterday</td><td>${row.Date_Yesterday}</td><td>${row.Volume_Yesterday}</td>`;
+                    html += `<td style="color: #1976d2;">${row.VA_Vol_Yesterday}</td>`;
+                    html += `<td>${row.VAH_Yesterday}</td><td>${row.VAL_Yesterday}</td></tr>`;
+                    html += `<tr><td>2 Days Ago</td><td>${row.Date_2_Days_Ago}</td><td>${row.Volume_2_Days_Ago}</td>`;
+                    html += `<td style="color: #1976d2;">${row.VA_Vol_2_Days_Ago}</td>`;
+                    html += `<td>${row.VAH_2_Days_Ago}</td><td>${row.VAL_2_Days_Ago}</td></tr>`;
+                    html += '</tbody></table></div>';
+                    
+                    // Rotation Analysis (SECONDARY)
+                    html += '<div style="background: white; padding: 15px; border-radius: 8px;">';
+                    html += '<h5 style="color: #667eea; margin-bottom: 10px;">🔄 Rotation Analysis</h5>';
+                    html += '<table class="result-table" style="width: 100%; font-size: 13px;">';
+                    html += '<thead><tr><th style="width: 20%;">Period</th><th>Date</th><th>Rotation</th></tr></thead>';
+                    html += '<tbody>';
+                    const todayRotation = parseInt(row.Rotation_Today);
+                    const yesterdayRotation = parseInt(row.Rotation_Yesterday);
+                    const dbyRotation = parseInt(row.Rotation_2_Days_Ago);
+                    const todayColor = todayRotation > 0 ? '#4caf50' : (todayRotation < 0 ? '#f44336' : '#666');
+                    const yesterdayColor = yesterdayRotation > 0 ? '#4caf50' : (yesterdayRotation < 0 ? '#f44336' : '#666');
+                    const dbyColor = dbyRotation > 0 ? '#4caf50' : (dbyRotation < 0 ? '#f44336' : '#666');
+                    html += `<tr style="background: #e3f2fd;"><td style="font-weight: bold;">Today</td><td>${row.Date_Today}</td>`;
+                    html += `<td style="font-weight: bold; color: ${todayColor}; font-size: 1.1em;">${row.Rotation_Today}</td></tr>`;
+                    html += `<tr><td>Yesterday</td><td>${row.Date_Yesterday}</td>`;
+                    html += `<td style="color: ${yesterdayColor}; font-weight: bold;">${row.Rotation_Yesterday}</td></tr>`;
+                    html += `<tr><td>2 Days Ago</td><td>${row.Date_2_Days_Ago}</td>`;
+                    html += `<td style="color: ${dbyColor}; font-weight: bold;">${row.Rotation_2_Days_Ago}</td></tr>`;
+                    html += '</tbody></table></div>';
+                    
+                    html += '</div>';
+                });
+            } else {
+                html += '<p>No daily analysis data available</p>';
+            }
+            
+            html += '</div>';
+            return html;
+        }
+
+        function displayPOCAnalysis(poc) {
+            let html = '<div class="result-section"><h3>📍 POC Movement</h3>';
+            
+            if (poc.bias !== undefined) {
+                const biasColor = poc.bias === 'BULLISH' ? '#4caf50' : (poc.bias === 'BEARISH' ? '#f44336' : '#ff9800');
+                html += '<div class="summary-card">';
+                html += `<div class="summary-item" style="background: ${biasColor};"><h4>Bias</h4><div class="value">${poc.bias}</div></div>`;
+                html += `<div class="summary-item"><h4>Score</h4><div class="value">${poc.bias_score}</div></div>`;
+                html += `<div class="summary-item"><h4>Days</h4><div class="value">${poc.days_analyzed}</div></div>`;
+                html += '</div>';
+            }
+            
+            if (poc.daily_pocs && poc.daily_pocs.length > 0) {
+                html += '<table class="result-table"><tr><th>Date</th><th>POC</th><th>Change</th></tr>';
+                poc.daily_pocs.forEach((item, idx) => {
+                    const change = idx > 0 ? (item.poc - poc.daily_pocs[idx-1].poc).toFixed(2) : '-';
+                    const changeClass = change !== '-' ? (parseFloat(change) > 0 ? 'highlight-positive' : 'highlight-negative') : '';
+                    html += `<tr>
+                        <td>${item.date}</td>
+                        <td>${item.poc.toFixed(2)}</td>
+                        <td class="${changeClass}">${change}</td>
+                    </tr>`;
+                });
+                html += '</table>';
+            }
+            
+            html += '</div>';
+            return html;
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            error.classList.add('active');
+        }
+    </script>
+</body>
+</html>

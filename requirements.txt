@@ -1,0 +1,9 @@
+Flask==3.0.0
+pandas==2.1.4
+requests==2.31.0
+reportlab==4.0.7
+Werkzeug==3.0.1
+supabase==2.9.0
+websockets>=13,<16
+pillow
+python-dotenv==1.0.0

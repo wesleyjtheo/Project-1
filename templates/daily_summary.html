@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Summary - Prediction Query Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0e1a;
+            min-height: 100vh;
+            color: #e4e6eb;
+            overflow-x: hidden;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            background: rgba(16, 20, 31, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            font-size: 28px;
+        }
+
+        .logo h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-links a {
+            padding: 8px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            text-decoration: none;
+            border-radius: 8px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            background: rgba(59, 130, 246, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .nav-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 20px;
+            font-size: 13px;
+            color: #10b981;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 32px;
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* Sidebar - Parameters Panel */
+        .sidebar {
+            background: rgba(16, 20, 31, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            height: fit-content;
+            position: sticky;
+            top: 90px;
+        }
+
+        .sidebar-header {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-header p {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #d1d5db;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(30, 35, 48, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+            color: #e4e6eb;
+            transition: all 0.2s;
+        }
+
+        .form-group select:hover {
+            border-color: rgba(99, 102, 241, 0.5);
+            background: rgba(30, 35, 48, 0.8);
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+            background: rgba(30, 35, 48, 0.9);
+        }
+
+        .form-group select option {
+            background: #10141f;
+            color: #e4e6eb;
+        }
+
+        .hint-text {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        /* Analysis Section */
+        .analysis-section {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .analysis-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Action Buttons */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Loading State */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px 40px;
+            background: rgba(16, 20, 31, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(99, 102, 241, 0.1);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card {
+            background: rgba(16, 20, 31, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .result-card-header {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-card-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-card-header p {
+            font-size: 13px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+
+        .result-item {
+            margin-bottom: 20px;
+        }
+
+        .result-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #9ca3af;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-value {
+            padding: 12px 16px;
+            background: rgba(30, 35, 48, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #e4e6eb;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .result-value.large {
+            font-size: 18px;
+            font-weight: 600;
+            border-left: 3px solid #6366f1;
+        }
+
+        .result-value.positive {
+            border-left-color: #10b981;
+            color: #10b981;
+        }
+
+        .result-value.negative {
+            border-left-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 24px;
+        }
+
+        .summary-items {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .summary-item {
+            padding: 20px;
+            background: rgba(30, 35, 48, 0.5);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .summary-item-label {
+            font-size: 13px;
+            color: #9ca3af;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-item-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .summary-item-value.positive {
+            color: #10b981;
+        }
+
+        .summary-item-value.negative {
+            color: #ef4444;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: relative;
+                top: 0;
+            }
+
+            .summary-items {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">
+                <span class="logo-icon">📊</span>
+                <h1>Daily Summary - Prediction Query Tool</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/">← Back to TPO Analysis</a>
+            </div>
+            <div class="nav-status">
+                <span class="status-dot"></span>
+                <span>Prediction System</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar - Input Parameters -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📈 Direction Prediction</h2>
+                <p>Rotation Analysis (Algorithm 1)</p>
+            </div>
+
+            <div class="form-group">
+                <label for="rotation">Rotation</label>
+                <select id="rotation">
+                    <option value="">Select...</option>
+                    <option value="B">B - Buyer Control</option>
+                    <option value="S">S - Seller Control</option>
+                    <option value="N">N - Neutral</option>
+                </select>
+                <div class="hint-text">Who controlled the price rotation</div>
+            </div>
+
+            <div class="form-group">
+                <label for="range_extension">Range Extension</label>
+                <select id="range_extension">
+                    <option value="">Select...</option>
+                    <option value="B">B - Extended Up</option>
+                    <option value="S">S - Extended Down</option>
+                    <option value="N">N - No Extension (Contained)</option>
+                </select>
+                <div class="hint-text">Direction of range expansion</div>
+            </div>
+
+            <div class="form-group">
+                <label for="tails">Tails (Rejection)</label>
+                <select id="tails">
+                    <option value="">Select...</option>
+                    <option value="B">B - Bottom Tail (Rejection Below)</option>
+                    <option value="S">S - Top Tail (Rejection Above)</option>
+                    <option value="N">N - Neutral (Both/Neither)</option>
+                </select>
+                <div class="hint-text">Where price was rejected from</div>
+            </div>
+
+            <div class="form-group">
+                <label for="composite">Composite</label>
+                <select id="composite">
+                    <option value="">Select...</option>
+                    <option value="B">B - Opened Low, Closed High</option>
+                    <option value="S">S - Opened High, Closed Low</option>
+                    <option value="N">N - Neutral (Mid-Range)</option>
+                    <option value="X">X - N/A (Wide Range Day)</option>
+                </select>
+                <div class="hint-text">Intraday price structure pattern</div>
+            </div>
+
+            <div class="analysis-section">
+                <h3>💪 Performance Strength</h3>
+                <p style="font-size: 13px; color: #9ca3af; margin-bottom: 16px;">Volume & Value Area (Algorithm 2)</p>
+            </div>
+
+            <div class="form-group">
+                <label for="volume_daily">Volume Daily</label>
+                <select id="volume_daily">
+                    <option value="">Select...</option>
+                    <option value="H">H - High Volume</option>
+                    <option value="L">L - Low Volume</option>
+                </select>
+                <div class="hint-text">Daily volume level</div>
+            </div>
+
+            <div class="form-group">
+                <label for="volume_avg">Volume vs Average</label>
+                <select id="volume_avg">
+                    <option value="">Select...</option>
+                    <option value="H">H - Above Average</option>
+                    <option value="L">L - Below Average</option>
+                </select>
+                <div class="hint-text">Volume vs historical average</div>
+            </div>
+
+            <div class="form-group">
+                <label for="va_placement">Value Area Placement</label>
+                <select id="va_placement">
+                    <option value="">Select...</option>
+                    <option value="Hi">Hi - Higher</option>
+                    <option value="OH">OH - Overlapping High</option>
+                    <option value="Lo">Lo - Lower</option>
+                    <option value="OL">OL - Overlapping Low</option>
+                    <option value="Un">Un - Unchanged</option>
+                </select>
+                <div class="hint-text">VA position vs previous session</div>
+            </div>
+
+            <div class="form-group">
+                <label for="va_width">Value Area Width</label>
+                <select id="va_width">
+                    <option value="">Select...</option>
+                    <option value="W">W - Wide</option>
+                    <option value="A">A - Average</option>
+                    <option value="N">N - Narrow</option>
+                </select>
+                <div class="hint-text">Distribution width of value area</div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="submitQuery()">
+                    <span>🔍</span>
+                    <span>Generate Prediction</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Loading State -->
+            <div id="loadingState" class="loading">
+                <div class="loading-spinner"></div>
+                <p>Analyzing market predictions...</p>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsSection" class="results-section">
+                <!-- Direction Prediction Results -->
+                <div class="result-card">
+                    <div class="result-card-header">
+                        <h3>
+                            <span>📈</span>
+                            <span>Direction Prediction</span>
+                        </h3>
+                        <p id="timestamp"></p>
+                    </div>
+                    <div id="rotationContent"></div>
+                </div>
+
+                <!-- Performance Strength Results -->
+                <div class="result-card">
+                    <div class="result-card-header">
+                        <h3>
+                            <span>💪</span>
+                            <span>Performance Strength</span>
+                        </h3>
+                    </div>
+                    <div id="volumeContent"></div>
+                </div>
+
+                <!-- Summary Card -->
+                <div class="summary-card">
+                    <h3>🎯 Trading Summary</h3>
+                    <div class="summary-items">
+                        <div class="summary-item">
+                            <div class="summary-item-label">Expected Direction</div>
+                            <div class="summary-item-value" id="summaryDirection">-</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-item-label">Performance Strength</div>
+                            <div class="summary-item-value" id="summaryStrength">-</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Save Button Section -->
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                            <label style="color: #94a3b8; font-size: 14px;">Coin:</label>
+                            <input type="text" id="saveCoin" placeholder="e.g., ETH" 
+                                   style="flex: 1; padding: 8px 12px; background: rgba(255,255,255,0.05); 
+                                          border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; 
+                                          color: #e4e6eb; font-size: 14px;">
+                        </div>
+                        <button class="btn btn-primary" onclick="saveToDatabase()" id="saveButton" 
+                                style="width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+                                       margin-top: 10px;">
+                            <span>💾</span> Save to Database
+                        </button>
+                        <div id="saveStatus" style="margin-top: 10px; font-size: 13px; text-align: center;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function submitQuery() {
+            // Get all input values
+            const rotation = document.getElementById('rotation').value;
+            const range_extension = document.getElementById('range_extension').value;
+            const tails = document.getElementById('tails').value;
+            const composite = document.getElementById('composite').value;
+            const volume_daily = document.getElementById('volume_daily').value;
+            const volume_avg = document.getElementById('volume_avg').value;
+            const va_placement = document.getElementById('va_placement').value;
+            const va_width = document.getElementById('va_width').value;
+
+            // Validate Part 1 inputs
+            if (!rotation || !range_extension || !tails || !composite) {
+                alert('Please fill in all Direction Prediction fields');
+                return;
+            }
+
+            // Validate Part 2 inputs
+            if (!volume_daily || !volume_avg || !va_placement || !va_width) {
+                alert('Please fill in all Performance Strength fields');
+                return;
+            }
+
+            // Show loading
+            const loadingState = document.getElementById('loadingState');
+            const resultsSection = document.getElementById('resultsSection');
+            loadingState.classList.add('active');
+            resultsSection.classList.remove('active');
+
+            // Submit query
+            fetch('/api/daily-summary', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    rotation: rotation,
+                    range_extension: range_extension,
+                    tails: tails,
+                    composite: composite,
+                    volume_daily: volume_daily,
+                    volume_avg: volume_avg,
+                    va_placement: va_placement,
+                    va_width: va_width
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingState.classList.remove('active');
+                if (data.success) {
+                    displayResults(data.results);
+                } else {
+                    displayError(data.error);
+                }
+            })
+            .catch(error => {
+                loadingState.classList.remove('active');
+                displayError('Network error: ' + error.message);
+            });
+        }
+
+        function displayResults(results) {
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.add('active');
+            
+            // Store results globally for saving
+            currentResults = results;
+            
+            // Update timestamp
+            document.getElementById('timestamp').textContent = 'Generated: ' + results.timestamp;
+
+            // Display rotation results
+            const rotationContent = document.getElementById('rotationContent');
+            if (results.rotation) {
+                if (results.rotation.error) {
+                    rotationContent.innerHTML = `
+                        <div class="error-message">
+                            <strong>❌ ${results.rotation.error}</strong><br>
+                            Code: ${results.rotation.code}
+                        </div>
+                    `;
+                } else {
+                    const directionClass = results.rotation.direction.includes('HIGHER') ? 'positive' : 
+                                          results.rotation.direction.includes('LOWER') ? 'negative' : '';
+                    rotationContent.innerHTML = `
+                        <div class="result-item">
+                            <div class="result-label">Input Code</div>
+                            <div class="result-value">${results.rotation.code}</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Score</div>
+                            <div class="result-value large">${results.rotation.score}</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Direction</div>
+                            <div class="result-value large ${directionClass}">${results.rotation.direction}</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Market Analysis</div>
+                            <div class="result-value">${results.rotation.comments}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Display volume results
+            const volumeContent = document.getElementById('volumeContent');
+            if (results.volume) {
+                if (results.volume.error) {
+                    volumeContent.innerHTML = `
+                        <div class="error-message">
+                            <strong>❌ ${results.volume.error}</strong><br>
+                            Code: ${results.volume.code}
+                        </div>
+                    `;
+                } else {
+                    const strengthClass = results.volume.performance_strength.includes('UP') || 
+                                         results.volume.performance_strength.includes('STRONG') ? 'positive' : 
+                                         results.volume.performance_strength.includes('DOWN') || 
+                                         results.volume.performance_strength.includes('WEAK') ? 'negative' : '';
+                    volumeContent.innerHTML = `
+                        <div class="result-item">
+                            <div class="result-label">Input Code</div>
+                            <div class="result-value">${results.volume.code}</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Performance Strength</div>
+                            <div class="result-value large ${strengthClass}">${results.volume.performance_strength}</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Detailed Comments</div>
+                            <div class="result-value">${results.volume.detailed_comments}</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Expected Results & Trading Strategy</div>
+                            <div class="result-value">${results.volume.expected_results}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Update summary
+            const summaryDirection = document.getElementById('summaryDirection');
+            const summaryStrength = document.getElementById('summaryStrength');
+            
+            if (results.rotation && !results.rotation.error) {
+                summaryDirection.textContent = results.rotation.direction;
+                if (results.rotation.direction.includes('HIGHER')) {
+                    summaryDirection.classList.add('positive');
+                    summaryDirection.classList.remove('negative');
+                } else if (results.rotation.direction.includes('LOWER')) {
+                    summaryDirection.classList.add('negative');
+                    summaryDirection.classList.remove('positive');
+                } else {
+                    summaryDirection.classList.remove('positive', 'negative');
+                }
+            } else {
+                summaryDirection.textContent = 'No prediction';
+                summaryDirection.classList.remove('positive', 'negative');
+            }
+
+            if (results.volume && !results.volume.error) {
+                summaryStrength.textContent = results.volume.performance_strength;
+                if (results.volume.performance_strength.includes('UP') || 
+                    results.volume.performance_strength.includes('STRONG')) {
+                    summaryStrength.classList.add('positive');
+                    summaryStrength.classList.remove('negative');
+                } else if (results.volume.performance_strength.includes('DOWN') || 
+                           results.volume.performance_strength.includes('WEAK')) {
+                    summaryStrength.classList.add('negative');
+                    summaryStrength.classList.remove('positive');
+                } else {
+                    summaryStrength.classList.remove('positive', 'negative');
+                }
+            } else {
+                summaryStrength.textContent = 'No prediction';
+                summaryStrength.classList.remove('positive', 'negative');
+            }
+        }
+
+        function displayError(errorMsg) {
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.add('active');
+            
+            document.getElementById('rotationContent').innerHTML = `
+                <div class="error-message">❌ ${errorMsg}</div>
+            `;
+            document.getElementById('volumeContent').innerHTML = `
+                <div class="error-message">❌ ${errorMsg}</div>
+            `;
+        }
+
+        // Global variable to store current results
+        let currentResults = null;
+
+        function saveToDatabase() {
+            const coin = document.getElementById('saveCoin').value.trim().toUpperCase();
+            const saveButton = document.getElementById('saveButton');
+            const saveStatus = document.getElementById('saveStatus');
+            
+            if (!coin) {
+                saveStatus.innerHTML = '<span style="color: #ef4444;">⚠️ Please enter a coin symbol</span>';
+                return;
+            }
+            
+            if (!currentResults || !currentResults.rotation) {
+                saveStatus.innerHTML = '<span style="color: #ef4444;">⚠️ No analysis results to save</span>';
+                return;
+            }
+            
+            // Prepare data for saving
+            const saveData = {
+                symbol: coin + 'USDT',
+                coin: coin,
+                asset: coin,
+                analysis_date: new Date().toISOString().split('T')[0],
+                timestamp: currentResults.timestamp,
+                input_code: currentResults.rotation.code,
+                score: currentResults.rotation.score,
+                direction: currentResults.rotation.direction,
+                market_analysis: currentResults.rotation.comments,
+                rotation_data: currentResults.rotation,
+                volume_data: currentResults.volume || null
+            };
+            
+            // Disable button and show loading
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<span>⏳</span> Saving...';
+            saveStatus.innerHTML = '<span style="color: #3b82f6;">Saving to database...</span>';
+            
+            // Send to backend
+            fetch('/api/save-analysis', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(saveData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                saveButton.disabled = false;
+                saveButton.innerHTML = '<span>💾</span> Save to Database';
+                
+                if (data.success) {
+                    saveStatus.innerHTML = '<span style="color: #10b981;">✅ Analysis saved successfully!</span>';
+                    setTimeout(() => {
+                        saveStatus.innerHTML = '';
+                    }, 3000);
+                } else {
+                    saveStatus.innerHTML = `<span style="color: #ef4444;">❌ Save failed: ${data.error || data.message}</span>`;
+                }
+            })
+            .catch(error => {
+                saveButton.disabled = false;
+                saveButton.innerHTML = '<span>💾</span> Save to Database';
+                saveStatus.innerHTML = `<span style="color: #ef4444;">❌ Network error: ${error.message}</span>`;
+            });
+        }
+    </script>
+</body>
+</html>
