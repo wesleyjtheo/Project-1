@@ -7,3 +7,4 @@ supabase==2.9.0
 websockets>=13,<16
 pillow
 python-dotenv==1.0.0
+gunicorn==21.2.0
