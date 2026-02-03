@@ -287,6 +287,7 @@ def daily_summary_query():
     """Process daily summary prediction queries"""
     try:
         data = request.json
+        print(f"Received request data: {data}")
         
         # Part 1: Direction Prediction (Rotation)
         rotation = data.get('rotation', '').upper()
@@ -297,8 +298,11 @@ def daily_summary_query():
         # Part 2: Performance Strength (Volume)
         vol_daily = data.get('volume_daily', '').upper()
         vol_avg = data.get('volume_avg', '').upper()
-        va_placement = data.get('va_placement', '').upper()
+        va_placement = data.get('va_placement', '')  # Don't uppercase - can be "Hi", "Lo", etc.
         va_width = data.get('va_width', '').upper()
+        
+        print(f"Rotation params: {rotation}, {range_ext}, {tails}, {composite}")
+        print(f"Volume params: {vol_daily}, {vol_avg}, {va_placement}, {va_width}")
         
         results = {
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -307,7 +311,10 @@ def daily_summary_query():
         # Query rotation prediction
         if all([rotation, range_ext, tails, composite]):
             try:
+                print(f"Querying rotation prediction...")
                 rotation_result = query_rotation_prediction(rotation, range_ext, tails, composite)
+                print(f"Rotation result: {rotation_result}")
+                
                 if rotation_result:
                     results['rotation'] = {
                         'code': f"{rotation},{range_ext},{tails},{composite}",
@@ -322,6 +329,8 @@ def daily_summary_query():
                     }
             except Exception as e:
                 print(f"Error querying rotation: {e}")
+                import traceback
+                traceback.print_exc()
                 results['rotation'] = {
                     'code': f"{rotation},{range_ext},{tails},{composite}",
                     'error': f'Database error: {str(e)}'
@@ -330,7 +339,10 @@ def daily_summary_query():
         # Query volume prediction
         if all([vol_daily, vol_avg, va_placement, va_width]):
             try:
+                print(f"Querying volume prediction...")
                 volume_result = query_volume_prediction(vol_daily, vol_avg, va_placement, va_width)
+                print(f"Volume result: {volume_result}")
+                
                 if volume_result:
                     results['volume'] = {
                         'code': f"{vol_daily},{vol_avg},{va_placement},{va_width}",
@@ -345,11 +357,14 @@ def daily_summary_query():
                     }
             except Exception as e:
                 print(f"Error querying volume: {e}")
+                import traceback
+                traceback.print_exc()
                 results['volume'] = {
                     'code': f"{vol_daily},{vol_avg},{va_placement},{va_width}",
                     'error': f'Database error: {str(e)}'
                 }
         
+        print(f"Returning results: {results}")
         return jsonify({'success': True, 'results': results})
         
     except Exception as e:
