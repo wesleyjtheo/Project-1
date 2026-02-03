@@ -47,6 +47,10 @@ Thumbs.db
 *.db
 *.sqlite
 
+# Allow prediction data files (needed for deployment)
+!Program for descision preday analysis/*.csv
+!Program for descision preday analysis/*.db
+
 # Logs
 *.log
 

@@ -28,7 +28,24 @@ import sys
 from pathlib import Path
 PREDICTION_DB_PATH = Path(__file__).parent / "Program for descision preday analysis "
 sys.path.insert(0, str(PREDICTION_DB_PATH))
-from prediction_database import query_rotation_prediction, query_volume_prediction
+
+# Try to import and initialize prediction database
+try:
+    from prediction_database import query_rotation_prediction, query_volume_prediction, create_database
+    
+    # Check if database exists, create if not
+    db_file = PREDICTION_DB_PATH / 'predictions.db'
+    if not db_file.exists():
+        print("Database not found, creating from CSV files...")
+        create_database()
+        print("Database created successfully!")
+except Exception as e:
+    print(f"Warning: Could not initialize prediction database: {e}")
+    # Create dummy functions if database fails
+    def query_rotation_prediction(*args, **kwargs):
+        return None
+    def query_volume_prediction(*args, **kwargs):
+        return None
 
 # Import Supabase client
 from supabase_client import save_analysis_result, get_analysis_history, get_recent_analyses
@@ -68,6 +85,12 @@ def index():
 def daily_summary():
     """Daily Summary page for prediction queries"""
     return render_template('daily_summary.html')
+
+
+@app.route('/favicon.ico')
+def favicon():
+    """Return empty response for favicon to avoid 404"""
+    return '', 204
 
 
 @app.route('/api/analyze', methods=['POST'])
@@ -283,42 +306,57 @@ def daily_summary_query():
         
         # Query rotation prediction
         if all([rotation, range_ext, tails, composite]):
-            rotation_result = query_rotation_prediction(rotation, range_ext, tails, composite)
-            if rotation_result:
+            try:
+                rotation_result = query_rotation_prediction(rotation, range_ext, tails, composite)
+                if rotation_result:
+                    results['rotation'] = {
+                        'code': f"{rotation},{range_ext},{tails},{composite}",
+                        'score': rotation_result['score'],
+                        'direction': rotation_result['direction'],
+                        'comments': rotation_result['detailed_comments']
+                    }
+                else:
+                    results['rotation'] = {
+                        'code': f"{rotation},{range_ext},{tails},{composite}",
+                        'error': 'No prediction found for this combination'
+                    }
+            except Exception as e:
+                print(f"Error querying rotation: {e}")
                 results['rotation'] = {
                     'code': f"{rotation},{range_ext},{tails},{composite}",
-                    'score': rotation_result['score'],
-                    'direction': rotation_result['direction'],
-                    'comments': rotation_result['detailed_comments']
-                }
-            else:
-                results['rotation'] = {
-                    'code': f"{rotation},{range_ext},{tails},{composite}",
-                    'error': 'No prediction found for this combination'
+                    'error': f'Database error: {str(e)}'
                 }
         
         # Query volume prediction
         if all([vol_daily, vol_avg, va_placement, va_width]):
-            volume_result = query_volume_prediction(vol_daily, vol_avg, va_placement, va_width)
-            if volume_result:
+            try:
+                volume_result = query_volume_prediction(vol_daily, vol_avg, va_placement, va_width)
+                if volume_result:
+                    results['volume'] = {
+                        'code': f"{vol_daily},{vol_avg},{va_placement},{va_width}",
+                        'performance_strength': volume_result['performance_strength'],
+                        'detailed_comments': volume_result['detailed_comments'],
+                        'expected_results': volume_result['expected_results']
+                    }
+                else:
+                    results['volume'] = {
+                        'code': f"{vol_daily},{vol_avg},{va_placement},{va_width}",
+                        'error': 'No prediction found for this combination'
+                    }
+            except Exception as e:
+                print(f"Error querying volume: {e}")
                 results['volume'] = {
                     'code': f"{vol_daily},{vol_avg},{va_placement},{va_width}",
-                    'performance_strength': volume_result['performance_strength'],
-                    'detailed_comments': volume_result['detailed_comments'],
-                    'expected_results': volume_result['expected_results']
-                }
-            else:
-                results['volume'] = {
-                    'code': f"{vol_daily},{vol_avg},{va_placement},{va_width}",
-                    'error': 'No prediction found for this combination'
+                    'error': f'Database error: {str(e)}'
                 }
         
         return jsonify({'success': True, 'results': results})
         
     except Exception as e:
+        import traceback
         error_trace = traceback.format_exc()
         print(f"Error in daily summary query: {error_trace}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e), 'trace': error_trace}), 500
 
 
 @app.route('/api/save-analysis', methods=['POST'])
